@@ -34,12 +34,18 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         super.viewWillAppear(animated)
         
         // Create a session configuration
-//        let configuration = ARWorldTrackingConfiguration()
-        let configuration = ARImageTrackingConfiguration()
+        
+        let configurationImage = ARImageTrackingConfiguration()
         guard let trackingImage = ARReferenceImage.referenceImages(inGroupNamed: "Test", bundle: nil) else { fatalError("could not do traking image")}
-        configuration.trackingImages = trackingImage
+        configurationImage.trackingImages = trackingImage
+        
+//        let configurationObject = ARWorldTrackingConfiguration()
+//        guard let trakingObject = ARReferenceObject.referenceObjects(inGroupNamed: "objects", bundle: nil) else { fatalError("could not do traking object") }
+//        configurationObject.detectionObjects = trakingObject
+        
         // Run the view's session
-        sceneView.session.run(configuration)
+//        sceneView.session.run(configurationObject)
+        sceneView.session.run(configurationImage)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -76,8 +82,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        guard let imageAnchor = anchor as? ARImageAnchor else { return nil}
+        
+        
         //get the image
+        
+        guard let imageAnchor = anchor as? ARImageAnchor else { return nil}
         guard let name = imageAnchor.referenceImage.name else { return nil }
         var rendererName = String()
         var rendererInfo = String()
@@ -91,35 +100,49 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             rendererInfo = "You can use this card in poker"
             rendererImage = "poker"
         }
+        
         //create a plane
+        
         let plane = SCNPlane(width: imageAnchor.referenceImage.physicalSize.width, height: imageAnchor.referenceImage.physicalSize.height)
         plane.firstMaterial?.diffuse.contents = UIColor.clear
         let planeNode = SCNNode(geometry: plane)
         planeNode.eulerAngles.x = -.pi / 2
-        //add plane
+        
+        
+        
         let node  = SCNNode()
         node.addChildNode(planeNode)
+        
         // text
+        
         let spacing: Float = 0.4
         let titleNode = textNode(rendererName, font: UIFont.boldSystemFont(ofSize: 10))
         titleNode.pivotTopLeft()
         titleNode.position.x += Float(plane.width / 2) + spacing
         titleNode.position.y += Float(plane.height / 2)
         planeNode.addChildNode(titleNode)
-        
+
         let infoNode = textNode(rendererInfo, font: UIFont.systemFont(ofSize: 5), maxWidth: 100)
         infoNode.pivotTopLeft()
         infoNode.position.x += Float(plane.width / 2) + spacing
         infoNode.position.y = titleNode.position.y - titleNode.height - spacing
         planeNode.addChildNode(infoNode)
-        
+
         let image = SCNPlane(width: imageAnchor.referenceImage.physicalSize.width / 2, height: imageAnchor.referenceImage.physicalSize.width / 2)
         image.firstMaterial?.diffuse.contents = UIImage(named: rendererImage)
-        
+
         let imageNode = SCNNode(geometry: image)
         imageNode.pivotTopCenter()
         imageNode.position.y -= Float(plane.height / 2) - Float(image.height / 2)
         planeNode.addChildNode(imageNode)
+        
+        //Object
+
+//        guard let objectAnchor = anchor as? ARObjectAnchor else { return nil }
+//        let newPlane = SCNPlane(width: CGFloat(objectAnchor.referenceObject.extent.x), height: CGFloat(objectAnchor.referenceObject.extent.y))
+//        newPlane.firstMaterial?.diffuse.contents = UIColor.blue
+//        let newPlaneNode = SCNNode(geometry: newPlane)
+//        node.addChildNode(newPlaneNode)
         
         return node
     }
